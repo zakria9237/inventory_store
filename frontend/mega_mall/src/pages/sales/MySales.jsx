@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
-import { getMySales } from "../../api/sales.api";
+import { getMySales, getAllSales } from "../../api/sales.api"; // add getAllSales
+import { useAuth } from "../../hooks/useAuth";
 import Loader from "../../components/common/Loader";
 
 const MySales = () => {
   const [sales, setSales] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const loadSales = async () => {
       try {
-        const data = await getMySales();
+        let data = [];
+        if (user?.role === "inventory_manager") {
+          data = await getAllSales(); // inventory manager sees all sales
+        } else {
+          data = await getMySales(); // sales staff sees only own sales
+        }
         setSales(data);
       } catch (err) {
         console.error("Sales load failed", err);
@@ -16,14 +23,16 @@ const MySales = () => {
       }
     };
     loadSales();
-  }, []);
+  }, [user]);
 
   if (!sales) return <Loader />;
   if (sales.length === 0) return <p className="p-6">No sales yet</p>;
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">My Sales</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        {user?.role === "inventory_manager" ? "All Sales" : "My Sales"}
+      </h1>
 
       <table className="w-full border">
         <thead>

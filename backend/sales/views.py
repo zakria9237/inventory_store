@@ -32,6 +32,7 @@ def checkout(request):
     items.delete()
     return Response({"detail": "Checkout successful"}, status=201)
 
+
 # -------------------------
 # My Sales (sales staff)
 # -------------------------
@@ -39,5 +40,19 @@ def checkout(request):
 @permission_classes([IsAuthenticated])
 def my_sales(request):
     sales = Sale.objects.filter(user=request.user).order_by("-created_at")
+    serializer = SaleSerializer(sales, many=True)
+    return Response(serializer.data)
+
+
+# -------------------------
+# All Sales (inventory manager)
+# -------------------------
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def all_sales(request):
+    if request.user.role != "inventory_manager":
+        return Response({"detail": "Not allowed"}, status=403)
+
+    sales = Sale.objects.all().order_by("-created_at")
     serializer = SaleSerializer(sales, many=True)
     return Response(serializer.data)

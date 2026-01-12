@@ -6,7 +6,7 @@ import useCart from "../../hooks/useCart"; // CartContext hook
 
 const ProductCard = ({ product, refresh }) => {
   const { user } = useAuth();
-  const { addItem } = useCart(); // ✅ addItem function from context
+  const { addItem } = useCart(); // addItem function from context
   const [edit, setEdit] = useState(false);
 
   const handleDelete = async () => {

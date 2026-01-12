@@ -1,21 +1,28 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom"; // ✅ useNavigate
 import { registerUser } from "../../api/auth.api";
-import { Link } from "react-router-dom";
 
 const Register = () => {
+  const navigate = useNavigate(); // ✅ redirect function
   const [form, setForm] = useState({
     username: "",
     password: "",
     password2: "",
-    role: "sales_staff", // ✅ default role
+    role: "sales_staff", // default role
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (form.password !== form.password2) {
+      alert("Passwords do not match");
+      return;
+    }
+
     try {
       await registerUser(form);
-      alert("Account created successfully. Please login.");
+      alert("Account created successfully! Please login."); // ✅ popup
+      navigate("/login"); // ✅ redirect to login page
     } catch (err) {
       alert(
         err.response?.data?.password ||
@@ -64,7 +71,6 @@ const Register = () => {
           }
         />
 
-        {/* ✅ CORRECT ROLE SELECT */}
         <select
           className="w-full border p-2"
           value={form.role}
