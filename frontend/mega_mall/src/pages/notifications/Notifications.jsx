@@ -18,12 +18,17 @@ const Notifications = () => {
   }, []);
 
   const handleRead = async (id) => {
-    await markNotificationRead(id);
+    // ✅ instant UI update
     setNotifications((prev) =>
       prev.map((n) =>
         n.id === id ? { ...n, is_read: true } : n
       )
     );
+
+    await markNotificationRead(id);
+
+    // 🔔 TELL NAVBAR TO UPDATE
+    window.dispatchEvent(new Event("notifications-updated"));
   };
 
   return (
