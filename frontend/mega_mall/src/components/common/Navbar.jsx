@@ -9,11 +9,35 @@ const Navbar = () => {
   const { cart } = useCart();
   const [unread, setUnread] = useState(0);
 
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const data = await getNotifications();
+      setUnread(data.filter((n) => !n.is_read).length);
+    } catch {
+      console.error("Notification fetch failed");
+    }
+  };
+
   useEffect(() => {
     if (!user) return;
-    getNotifications().then((data) => {
-      setUnread(data.filter((n) => !n.is_read).length);
-    });
+
+    // 🔔 initial load
+    fetchNotifications();
+
+    // 🔁 polling (backup safety)
+    const interval = setInterval(fetchNotifications, 5000);
+
+    // ⚡ instant update listener
+    window.addEventListener("notifications-updated", fetchNotifications);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener(
+        "notifications-updated",
+        fetchNotifications
+      );
+    };
   }, [user]);
 
   return (
@@ -25,13 +49,10 @@ const Navbar = () => {
       <div className="flex gap-4 items-center">
         <Link to="/products">Products</Link>
 
-        {user?.role === "sales_staff" && (
-          <Link to="/cart">
-            Cart ({cart?.items?.length || 0})
-          </Link>
-        )}
+        {user?.role === "sales_staff" && <Link to="/cart">Cart</Link>}
 
-        {(user?.role === "inventory_manager" || user?.role === "admin") && (
+        {(user?.role === "inventory_manager" ||
+          user?.role === "admin") && (
           <Link to="/inventory">Inventory</Link>
         )}
 
@@ -47,7 +68,9 @@ const Navbar = () => {
           )}
         </Link>
 
-        <span className="text-sm text-gray-300">{user?.username}</span>
+        <span className="text-sm text-gray-300">
+          {user?.username}
+        </span>
 
         <button
           onClick={logout}
